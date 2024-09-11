@@ -13,7 +13,7 @@ func (h controller) FindByID(c echo.Context) error {
 		return err
 	}
 
-	res, err := h.user.FindByID(c.Request().Context(), req.ID)
+	res, err := h.user.FindByID(c.Request().Context(), req)
 	if err != nil {
 		return err
 	}

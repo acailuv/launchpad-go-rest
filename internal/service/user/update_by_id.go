@@ -4,12 +4,15 @@ import (
 	"context"
 	"database/sql"
 	"launchpad-go-rest/internal/lib/errors"
-	"launchpad-go-rest/internal/lib/utils"
 	"launchpad-go-rest/pkg/types/user"
 	"net/http"
 )
 
 func (s service) UpdateByID(ctx context.Context, p user.UpdateByIDRequest) error {
+	if err := p.Validate(ctx); err != nil {
+		return errors.NewWithCode(http.StatusBadRequest, errors.VALIDATION_ERROR, err.Error())
+	}
+
 	if p.Password != p.PasswordConfirmation {
 		return errors.NewWithCode(http.StatusBadRequest, errors.PASSWORD_CONFIRMATION_MISMATCH, "Password confirmation does not match")
 	}
@@ -21,11 +24,11 @@ func (s service) UpdateByID(ctx context.Context, p user.UpdateByIDRequest) error
 		return err
 	}
 
-	if !utils.ComparePassword(existingUser.Password, p.OldPassword) {
+	if !s.utils.ComparePassword(existingUser.Password, p.OldPassword) {
 		return errors.NewWithCode(http.StatusBadRequest, errors.INVALID_OLD_PASSWORD, "Invalid old password")
 	}
 
-	newPasswordHash, err := utils.HashPassword(p.Password)
+	newPasswordHash, err := s.utils.HashPassword(p.Password)
 	if err != nil {
 		return err
 	}

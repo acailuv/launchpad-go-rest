@@ -6,6 +6,7 @@ import (
 	"launchpad-go-rest/internal/lib/config"
 	"launchpad-go-rest/internal/lib/errors"
 	_errors "launchpad-go-rest/internal/lib/errors"
+	"launchpad-go-rest/internal/lib/utils"
 	"launchpad-go-rest/internal/middleware"
 	"launchpad-go-rest/internal/repository"
 	"launchpad-go-rest/internal/router"
@@ -27,7 +28,8 @@ func main() {
 
 	db := sqlx.MustConnect("postgres", config.Configs.DatabaseDSN)
 	repositories := repository.Init(db, e.Logger)
-	services := service.Init(repositories, e.Logger)
+	utils := utils.New()
+	services := service.Init(repositories, e.Logger, utils)
 	controllers := controller.Init(services, e.Logger)
 	middleware := middleware.Init()
 	router.Init(e, controllers, e.Logger, middleware)

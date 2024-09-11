@@ -13,7 +13,7 @@ func (h controller) DeleteByID(c echo.Context) error {
 		return err
 	}
 
-	err = h.user.DeleteByID(c.Request().Context(), req.ID)
+	err = h.user.DeleteByID(c.Request().Context(), req)
 	if err != nil {
 		return err
 	}

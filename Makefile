@@ -15,3 +15,15 @@ migration-up:
 # Usage: make migration-up database=postgres://blehbleh...
 migration-down:
 	@migrate -database ${database} -source file://migrations down
+
+# Usage: make mock-repo src=user
+mock-repo:
+	@mockgen -source=internal/repository/${src}/repository.go -destination=internal/repository/mock/mock_${src}/repository.go
+
+# Usage: make mock-service src=user
+mock-service:
+	@mockgen -source=internal/service/${src}/service.go -destination=internal/service/mock/mock_${src}/service.go
+
+# Usage: make mock-utils
+mock-utils:
+	@mockgen -source=internal/lib/utils/utils.go -destination=internal/lib/utils/mock/utils.go

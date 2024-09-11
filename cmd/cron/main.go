@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"launchpad-go-rest/internal/lib/config"
+	"launchpad-go-rest/internal/lib/utils"
 	"launchpad-go-rest/internal/repository"
 	"launchpad-go-rest/internal/service"
 
@@ -19,7 +20,8 @@ func main() {
 
 	db := sqlx.MustConnect("postgres", config.Configs.DatabaseDSN)
 	repositories := repository.Init(db, e.Logger)
-	_ = service.Init(repositories, e.Logger)
+	utils := utils.New()
+	_ = service.Init(repositories, e.Logger, utils)
 
 	c := cron.New()
 	c.AddFunc("* * * * * *", func() { fmt.Println("Heartbeat") })

@@ -52,6 +52,6 @@ make migration-down database=<postgres-dsn-here>
 
 # Template Roadmap
 
-- [ ] Unit Tests
+- [x] Unit Tests
 - [ ] Redis Support
 - [ ] Message Broker Support (RMQ/Kafka)
