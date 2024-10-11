@@ -4,6 +4,14 @@ start-server:
 start-cron:
 	@go run cmd/cron/main.go
 
+# Install swaggo: https://github.com/swaggo/echo-swagger
+swag-install:
+	@go install github.com/swaggo/swag/cmd/swag@latest
+
+# Regenerate swaggo
+swag-generate:
+	@swag fmt && swag init --parseDependency -d cmd/server,internal/controller -o cmd/server/docs
+
 # Usage: make migration-new name=add_balance_column_users
 migration-new:
 	@migrate create -ext sql -dir ./migrations ${name}

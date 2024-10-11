@@ -35,7 +35,7 @@ func (x CreateRequest) Validate(ctx context.Context) error {
 }
 
 type UpdateByIDRequest struct {
-	ID                   string `param:"id"`
+	ID                   string `param:"id" json:"-"`
 	Email                string `json:"email"`
 	OldPassword          string `json:"old_password"`
 	Password             string `json:"password"`
