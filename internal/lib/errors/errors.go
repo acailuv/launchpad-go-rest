@@ -13,7 +13,7 @@ func New(e any) error {
 	case error:
 		err = e
 	default:
-		err = fmt.Errorf("%v", e)
+		err = errors.New(e)
 	}
 
 	return errors.New(&Error{

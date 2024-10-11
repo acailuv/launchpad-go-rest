@@ -5,8 +5,6 @@ import (
 	"launchpad-go-rest/internal/lib/utils"
 	"launchpad-go-rest/internal/repository/user"
 	user_types "launchpad-go-rest/pkg/types/user"
-
-	"github.com/labstack/echo/v4"
 )
 
 type Service interface {
@@ -18,19 +16,16 @@ type Service interface {
 }
 
 type service struct {
-	user   user.Repository
-	logger echo.Logger
-	utils  utils.Utils
+	user  user.Repository
+	utils utils.Utils
 }
 
 func New(
 	user user.Repository,
-	logger echo.Logger,
 	utils utils.Utils,
 ) Service {
 	return &service{
-		user:   user,
-		logger: logger,
-		utils:  utils,
+		user:  user,
+		utils: utils,
 	}
 }

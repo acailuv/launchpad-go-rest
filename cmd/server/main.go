@@ -17,6 +17,8 @@ import (
 
 	goerrors "github.com/go-errors/errors"
 	_ "github.com/lib/pq"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
@@ -24,26 +26,48 @@ import (
 	echo_swagger "github.com/swaggo/echo-swagger"
 )
 
-//	@title						Launchpad Go Rest API
-//	@version					1.0
-//	@description				This is a template for back end REST API server in Go.
-//	@securityDefinitions.apikey	ApiKeyAuth
-//	@in							header
-//	@name						Authorization
-//	@host						localhost:1323
+// @title						Launchpad Go Rest API
+// @version					1.0
+// @description				This is a template for back end REST API server in Go.
+// @securityDefinitions.apikey	ApiKeyAuth
+// @in							header
+// @name						Authorization
+// @host						localhost:1323
 func main() {
 	e := echo.New()
 	config.Init()
 
 	db := sqlx.MustConnect("postgres", config.Configs.DatabaseDSN)
-	repositories := repository.Init(db, e.Logger)
+	repositories := repository.Init(db)
 	utils := utils.New()
-	services := service.Init(repositories, e.Logger, utils)
-	controllers := controller.Init(services, e.Logger)
+	services := service.Init(repositories, utils)
+	controllers := controller.Init(services)
 	middleware := middleware.Init()
-	router.Init(e, controllers, e.Logger, middleware)
+	router.Init(e, controllers, middleware)
 
-	e.Use(echo_middleware.Logger())
+	zerolog.ErrorStackMarshaler = func(err error) interface{} {
+		frames := goerrors.Wrap(err, 1).StackFrames()
+
+		stack := make([]string, len(frames))
+		for i, frame := range frames {
+			stack[i] = fmt.Sprintf("%s:%d", frame.File, frame.LineNumber)
+		}
+
+		return stack
+	}
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+
+	e.Use(echo_middleware.RequestLoggerWithConfig(echo_middleware.RequestLoggerConfig{
+		LogMethod: true,
+		LogURI:    true,
+		LogValuesFunc: func(c echo.Context, v echo_middleware.RequestLoggerValues) error {
+			log.Info().
+				Str("URI", fmt.Sprintf("%s %s", v.Method, v.URI)).
+				Msg("request incoming")
+
+			return nil
+		},
+	}))
 	e.Use(echo_middleware.Recover())
 
 	e.HTTPErrorHandler = func(err error, c echo.Context) {
@@ -56,8 +80,6 @@ func main() {
 
 		var statusCode int
 		if e, ok := err.(*goerrors.Error); ok {
-			c.Logger().SetPrefix(e.ErrorStack())
-
 			if ex, ok := e.Unwrap().(*_errors.Error); ok {
 				statusCode = ex.StatusCode
 				resp.Error.Code = ex.ErrorCode
@@ -72,12 +94,13 @@ func main() {
 			resp.Error.Message = e.Message.(string)
 		}
 
-		c.Logger().Error(resp.Error.Message)
+		log.Error().Stack().Err(err).Send()
 		c.JSON(statusCode, resp)
 	}
 
 	// Swagger
 	e.GET("/swagger*", echo_swagger.WrapHandler)
 
+	e.HideBanner = true
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", config.Configs.Port)))
 }

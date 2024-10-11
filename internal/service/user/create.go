@@ -23,6 +23,10 @@ func (s service) Create(ctx context.Context, p user.CreateRequest) error {
 		return err
 	}
 
+	if _, err := s.user.FindByEmail(ctx, p.Email); err == nil {
+		return errors.NewWithCode(http.StatusConflict, errors.USER_ALREADY_EXISTS, "User already exists")
+	}
+
 	return s.user.Create(ctx, user.User{
 		ID:       ulid.Make().String(),
 		Email:    p.Email,

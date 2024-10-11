@@ -8,7 +8,6 @@ import (
 	user_types "launchpad-go-rest/pkg/types/user"
 	"testing"
 
-	"github.com/labstack/echo/v4"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/mock/gomock"
 )
@@ -26,8 +25,7 @@ func Test_User_Create(t *testing.T) {
 			mockUtils: mock_utils.NewMockUtils(ctrl),
 		}
 
-		logger := echo.New().Logger
-		svc := New(deps.mockUser, logger, deps.mockUtils)
+		svc := New(deps.mockUser, deps.mockUtils)
 
 		errMock := errors.New("mock error")
 
@@ -66,6 +64,19 @@ func Test_User_Create(t *testing.T) {
 				errExpected: true,
 			},
 			{
+				desc: "Error: Find duplicate user",
+				req: user_types.CreateRequest{
+					Email:                "test@email.com",
+					Password:             "Password1",
+					PasswordConfirmation: "Password1",
+				},
+				mockCalls: func() {
+					deps.mockUtils.EXPECT().HashPassword(gomock.Any()).Return("", nil)
+					deps.mockUser.EXPECT().FindByEmail(gomock.Any(), gomock.Any()).Return(user_types.User{}, nil)
+				},
+				errExpected: true,
+			},
+			{
 				desc: "Error: Create user",
 				req: user_types.CreateRequest{
 					Email:                "test@email.com",
@@ -74,6 +85,7 @@ func Test_User_Create(t *testing.T) {
 				},
 				mockCalls: func() {
 					deps.mockUtils.EXPECT().HashPassword(gomock.Any()).Return("PasswordHash1", nil)
+					deps.mockUser.EXPECT().FindByEmail(gomock.Any(), gomock.Any()).Return(user_types.User{}, errMock)
 					deps.mockUser.EXPECT().Create(gomock.Any(), gomock.Any()).Return(errMock)
 				},
 				errExpected: true,
@@ -87,6 +99,7 @@ func Test_User_Create(t *testing.T) {
 				},
 				mockCalls: func() {
 					deps.mockUtils.EXPECT().HashPassword(gomock.Any()).Return("PasswordHash1", nil)
+					deps.mockUser.EXPECT().FindByEmail(gomock.Any(), gomock.Any()).Return(user_types.User{}, errMock)
 					deps.mockUser.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil)
 				},
 				errExpected: false,

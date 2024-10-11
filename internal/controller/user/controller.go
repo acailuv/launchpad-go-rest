@@ -15,13 +15,11 @@ type Controller interface {
 }
 
 type controller struct {
-	user   user.Service
-	logger echo.Logger
+	user user.Service
 }
 
-func New(user user.Service, logger echo.Logger) Controller {
+func New(user user.Service) Controller {
 	return &controller{
-		user:   user,
-		logger: logger,
+		user: user,
 	}
 }

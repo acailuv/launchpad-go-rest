@@ -7,21 +7,32 @@ import (
 	"launchpad-go-rest/internal/repository"
 	"launchpad-go-rest/internal/service"
 
+	goerrors "github.com/go-errors/errors"
 	_ "github.com/lib/pq"
+	"github.com/rs/zerolog"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/labstack/echo/v4"
 	"github.com/robfig/cron"
 )
 
 func main() {
-	e := echo.New()
 	config.Init()
 
+	zerolog.ErrorStackMarshaler = func(err error) interface{} {
+		frames := goerrors.Wrap(err, 1).StackFrames()
+
+		stack := make([]string, len(frames))
+		for i, frame := range frames {
+			stack[i] = fmt.Sprintf("%s:%d", frame.File, frame.LineNumber)
+		}
+
+		return stack
+	}
+
 	db := sqlx.MustConnect("postgres", config.Configs.DatabaseDSN)
-	repositories := repository.Init(db, e.Logger)
+	repositories := repository.Init(db)
 	utils := utils.New()
-	_ = service.Init(repositories, e.Logger, utils)
+	_ = service.Init(repositories, utils)
 
 	c := cron.New()
 	c.AddFunc("* * * * * *", func() { fmt.Println("Heartbeat") })

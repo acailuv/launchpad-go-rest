@@ -18,11 +18,10 @@ type router struct {
 	middleware middleware.Middleware
 }
 
-func New(e *echo.Echo, controller user.Controller, logger echo.Logger, middleware middleware.Middleware) Router {
+func New(e *echo.Echo, controller user.Controller, middleware middleware.Middleware) Router {
 	return &router{
 		echo:       e,
 		controller: controller,
-		logger:     logger,
 		middleware: middleware,
 	}
 }

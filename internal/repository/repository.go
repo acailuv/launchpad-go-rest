@@ -4,15 +4,14 @@ import (
 	"launchpad-go-rest/internal/repository/user"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/labstack/echo/v4"
 )
 
 type Repository struct {
 	User user.Repository
 }
 
-func Init(db *sqlx.DB, logger echo.Logger) *Repository {
+func Init(db *sqlx.DB) *Repository {
 	return &Repository{
-		User: user.New(db, logger),
+		User: user.New(db),
 	}
 }

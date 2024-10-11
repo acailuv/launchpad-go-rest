@@ -12,9 +12,9 @@ type routers struct {
 	User user.Router
 }
 
-func Init(e *echo.Echo, controllers *controller.Controller, logger echo.Logger, middleware middleware.Middleware) {
+func Init(e *echo.Echo, controllers *controller.Controller, middleware middleware.Middleware) {
 	routers := routers{
-		User: user.New(e, controllers.User, logger, middleware),
+		User: user.New(e, controllers.User, middleware),
 	}
 
 	routers.User.HandleRoutes()

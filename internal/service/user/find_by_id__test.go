@@ -9,7 +9,6 @@ import (
 	"launchpad-go-rest/pkg/types/user"
 	"testing"
 
-	"github.com/labstack/echo/v4"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/mock/gomock"
 )
@@ -27,8 +26,7 @@ func Test_User_FindByID(t *testing.T) {
 			mockUtils: mock_utils.NewMockUtils(ctrl),
 		}
 
-		logger := echo.New().Logger
-		svc := New(deps.mockUser, logger, deps.mockUtils)
+		svc := New(deps.mockUser, deps.mockUtils)
 
 		errMock := errors.New("mock error")
 
