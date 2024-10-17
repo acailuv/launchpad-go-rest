@@ -53,5 +53,5 @@ make migration-down database=<postgres-dsn-here>
 # Template Roadmap
 
 - [x] Unit Tests
-- [ ] Redis Support
-- [ ] Message Broker Support (RMQ/Kafka)
+- [x] Redis Support
+- [ ] Message Broker Support ([Asynq](https://github.com/hibiken/asynq))

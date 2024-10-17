@@ -12,6 +12,6 @@ type Service struct {
 
 func Init(repositories *repository.Repository, utils utils.Utils) *Service {
 	return &Service{
-		User: user.New(repositories.User, utils),
+		User: user.New(repositories.User, utils, repositories.Cache),
 	}
 }

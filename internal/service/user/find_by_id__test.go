@@ -5,10 +5,12 @@ import (
 	"database/sql"
 	"launchpad-go-rest/internal/lib/errors"
 	mock_utils "launchpad-go-rest/internal/lib/utils/mock"
+	"launchpad-go-rest/internal/repository/mock/mock_cache"
 	"launchpad-go-rest/internal/repository/mock/mock_user"
 	"launchpad-go-rest/pkg/types/user"
 	"testing"
 
+	"github.com/go-redis/redis"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/mock/gomock"
 )
@@ -21,12 +23,14 @@ func Test_User_FindByID(t *testing.T) {
 		deps := struct {
 			mockUser  *mock_user.MockRepository
 			mockUtils *mock_utils.MockUtils
+			mockCache *mock_cache.MockRepository
 		}{
 			mockUser:  mock_user.NewMockRepository(ctrl),
 			mockUtils: mock_utils.NewMockUtils(ctrl),
+			mockCache: mock_cache.NewMockRepository(ctrl),
 		}
 
-		svc := New(deps.mockUser, deps.mockUtils)
+		svc := New(deps.mockUser, deps.mockUtils, deps.mockCache)
 
 		errMock := errors.New("mock error")
 
@@ -50,6 +54,7 @@ func Test_User_FindByID(t *testing.T) {
 					ID: "id",
 				},
 				mockCalls: func() {
+					deps.mockCache.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any()).Return(redis.Nil)
 					deps.mockUser.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(user.User{}, sql.ErrNoRows)
 				},
 				errExpected:  true,
@@ -61,6 +66,7 @@ func Test_User_FindByID(t *testing.T) {
 					ID: "id",
 				},
 				mockCalls: func() {
+					deps.mockCache.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any()).Return(redis.Nil)
 					deps.mockUser.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(user.User{}, errMock)
 				},
 				errExpected:  true,
@@ -72,11 +78,44 @@ func Test_User_FindByID(t *testing.T) {
 					ID: "id",
 				},
 				mockCalls: func() {
+					deps.mockCache.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any()).Return(redis.Nil)
 					deps.mockUser.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(user.User{
 						ID:       "id",
 						Email:    "test@email.com",
 						Password: "hash123",
 					}, nil)
+					deps.mockCache.EXPECT().Set(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				},
+				errExpected: false,
+				expectedResp: user.FindByIDResponse{
+					ID:    "id",
+					Email: "test@email.com",
+				},
+			},
+			{
+				desc: "Success with cache",
+				req: user.FindByIDRequest{
+					ID: "id",
+				},
+				mockCalls: func() {
+					deps.mockCache.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				},
+				errExpected:  false,
+				expectedResp: user.FindByIDResponse{},
+			},
+			{
+				desc: "Success with cache error (get)",
+				req: user.FindByIDRequest{
+					ID: "id",
+				},
+				mockCalls: func() {
+					deps.mockCache.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any()).Return(errMock)
+					deps.mockUser.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(user.User{
+						ID:       "id",
+						Email:    "test@email.com",
+						Password: "hash123",
+					}, nil)
+					deps.mockCache.EXPECT().Set(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(errMock)
 				},
 				errExpected: false,
 				expectedResp: user.FindByIDResponse{

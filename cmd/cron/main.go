@@ -8,6 +8,7 @@ import (
 	"launchpad-go-rest/internal/service"
 
 	goerrors "github.com/go-errors/errors"
+	"github.com/go-redis/redis"
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
 
@@ -30,7 +31,10 @@ func main() {
 	}
 
 	db := sqlx.MustConnect("postgres", config.Configs.DatabaseDSN)
-	repositories := repository.Init(db)
+	redis := redis.NewClient(&redis.Options{
+		Addr: config.Configs.RedisDSN,
+	})
+	repositories := repository.Init(db, redis)
 	utils := utils.New()
 	_ = service.Init(repositories, utils)
 

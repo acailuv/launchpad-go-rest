@@ -4,6 +4,7 @@ go 1.22.5
 
 require (
 	github.com/go-errors/errors v1.5.1
+	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/golobby/dotenv v1.3.2
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/labstack/echo-jwt/v4 v4.2.0
@@ -30,6 +31,8 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/jtolds/gls v4.20.0+incompatible // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
+	github.com/onsi/ginkgo v1.16.5 // indirect
+	github.com/onsi/gomega v1.34.2 // indirect
 	github.com/smarty/assertions v1.15.0 // indirect
 	github.com/swaggo/files/v2 v2.0.1 // indirect
 	golang.org/x/time v0.5.0 // indirect

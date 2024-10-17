@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"launchpad-go-rest/internal/lib/utils"
+	"launchpad-go-rest/internal/repository/cache"
 	"launchpad-go-rest/internal/repository/user"
 	user_types "launchpad-go-rest/pkg/types/user"
 )
@@ -18,14 +19,17 @@ type Service interface {
 type service struct {
 	user  user.Repository
 	utils utils.Utils
+	cache cache.Repository
 }
 
 func New(
 	user user.Repository,
 	utils utils.Utils,
+	cache cache.Repository,
 ) Service {
 	return &service{
 		user:  user,
 		utils: utils,
+		cache: cache,
 	}
 }

@@ -8,13 +8,7 @@ import (
 )
 
 func New(e any) error {
-	var err error
-	switch e := e.(type) {
-	case error:
-		err = e
-	default:
-		err = errors.New(e)
-	}
+	err := errors.Wrap(e, 1)
 
 	return errors.New(&Error{
 		StatusCode: http.StatusInternalServerError,
@@ -40,9 +34,19 @@ func NewWithCode(statusCode int, errorCode int, e any) error {
 }
 
 func Is(e error, original error) bool {
+	var _e *Error
+	if errors.As(e, &_e) {
+		return errors.Is(_e.Err, original)
+	}
+
 	return errors.Is(e, original)
 }
 
 func As(e error, target any) bool {
+	var _e *Error
+	if errors.As(e, &_e) {
+		return errors.As(_e.Err, target)
+	}
+
 	return errors.As(e, target)
 }

@@ -16,6 +16,7 @@ import (
 	_ "launchpad-go-rest/cmd/server/docs"
 
 	goerrors "github.com/go-errors/errors"
+	"github.com/go-redis/redis"
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -38,12 +39,9 @@ func main() {
 	config.Init()
 
 	db := sqlx.MustConnect("postgres", config.Configs.DatabaseDSN)
-	repositories := repository.Init(db)
-	utils := utils.New()
-	services := service.Init(repositories, utils)
-	controllers := controller.Init(services)
-	middleware := middleware.Init()
-	router.Init(e, controllers, middleware)
+	redis := redis.NewClient(&redis.Options{
+		Addr: config.Configs.RedisDSN,
+	})
 
 	zerolog.ErrorStackMarshaler = func(err error) interface{} {
 		frames := goerrors.Wrap(err, 1).StackFrames()
@@ -57,18 +55,36 @@ func main() {
 	}
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 
-	e.Use(echo_middleware.RequestLoggerWithConfig(echo_middleware.RequestLoggerConfig{
-		LogMethod: true,
-		LogURI:    true,
-		LogValuesFunc: func(c echo.Context, v echo_middleware.RequestLoggerValues) error {
-			log.Info().
-				Str("URI", fmt.Sprintf("%s %s", v.Method, v.URI)).
-				Msg("request incoming")
+	repositories := repository.Init(db, redis)
+	utils := utils.New()
+	services := service.Init(repositories, utils)
+	controllers := controller.Init(services)
+	middleware := middleware.Init()
+	router.Init(e, controllers, middleware)
 
-			return nil
-		},
-	}))
-	e.Use(echo_middleware.Recover())
+	e.Use(
+		echo_middleware.RequestID(),
+		echo_middleware.CORS(),
+		echo_middleware.Gzip(),
+		echo_middleware.Recover(),
+		echo_middleware.RequestLoggerWithConfig(echo_middleware.RequestLoggerConfig{
+			LogMethod:    true,
+			LogURI:       true,
+			LogRequestID: true,
+			LogValuesFunc: func(c echo.Context, v echo_middleware.RequestLoggerValues) error {
+				log.Info().
+					Str("endpoint", fmt.Sprintf("%s %s", v.Method, v.URI)).
+					Str("request_id", v.RequestID).
+					Msg("request incoming")
+
+				return nil
+			},
+		}),
+		echo_middleware.RecoverWithConfig(echo_middleware.RecoverConfig{
+			DisablePrintStack: true,
+			DisableStackAll:   true,
+		}),
+	)
 
 	e.HTTPErrorHandler = func(err error, c echo.Context) {
 		resp := base.Response[any]{
@@ -102,5 +118,5 @@ func main() {
 	e.GET("/swagger*", echo_swagger.WrapHandler)
 
 	e.HideBanner = true
-	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", config.Configs.Port)))
+	log.Fatal().Err(e.Start(fmt.Sprintf(":%s", config.Configs.Port))).Send()
 }
