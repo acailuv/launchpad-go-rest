@@ -14,7 +14,6 @@ type Router interface {
 type router struct {
 	echo       *echo.Echo
 	controller user.Controller
-	logger     echo.Logger
 	middleware middleware.Middleware
 }
 

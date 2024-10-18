@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"launchpad-go-rest/internal/lib/config"
 	"launchpad-go-rest/internal/lib/utils"
 	"launchpad-go-rest/internal/queue_handler"
@@ -8,15 +9,28 @@ import (
 	"launchpad-go-rest/internal/service"
 	"launchpad-go-rest/pkg/types/queue"
 
+	goerrors "github.com/go-errors/errors"
 	"github.com/go-redis/redis"
 	"github.com/hibiken/asynq"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
 func main() {
 	config.Init()
+
+	zerolog.ErrorStackMarshaler = func(err error) interface{} {
+		frames := goerrors.Wrap(err, 1).StackFrames()
+
+		stack := make([]string, len(frames))
+		for i, frame := range frames {
+			stack[i] = fmt.Sprintf("%s:%d", frame.File, frame.LineNumber)
+		}
+
+		return stack
+	}
 
 	srv := asynq.NewServer(
 		asynq.RedisClientOpt{Addr: config.Configs.RedisDSN},
