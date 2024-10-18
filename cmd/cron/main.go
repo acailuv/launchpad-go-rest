@@ -9,6 +9,7 @@ import (
 
 	goerrors "github.com/go-errors/errors"
 	"github.com/go-redis/redis"
+	"github.com/hibiken/asynq"
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
 
@@ -31,10 +32,17 @@ func main() {
 	}
 
 	db := sqlx.MustConnect("postgres", config.Configs.DatabaseDSN)
+	defer db.Close()
+
 	redis := redis.NewClient(&redis.Options{
 		Addr: config.Configs.RedisDSN,
 	})
-	repositories := repository.Init(db, redis)
+	defer redis.Close()
+
+	asynqClient := asynq.NewClient(asynq.RedisClientOpt{Addr: config.Configs.RedisDSN})
+	defer asynqClient.Close()
+
+	repositories := repository.Init(db, redis, asynqClient)
 	utils := utils.New()
 	_ = service.Init(repositories, utils)
 

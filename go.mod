@@ -3,9 +3,11 @@ module launchpad-go-rest
 go 1.22.5
 
 require (
+	github.com/acailuv/numeric v0.1.0
 	github.com/go-errors/errors v1.5.1
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/golobby/dotenv v1.3.2
+	github.com/hibiken/asynq v0.24.1
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/labstack/echo-jwt/v4 v4.2.0
 	github.com/labstack/echo/v4 v4.12.0
@@ -20,6 +22,8 @@ require (
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
+	github.com/cespare/xxhash/v2 v2.2.0 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/jsonreference v0.21.0 // indirect
@@ -27,16 +31,22 @@ require (
 	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang-jwt/jwt/v5 v5.0.0 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/google/uuid v1.2.0 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/jtolds/gls v4.20.0+incompatible // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/onsi/ginkgo v1.16.5 // indirect
 	github.com/onsi/gomega v1.34.2 // indirect
+	github.com/redis/go-redis/v9 v9.0.3 // indirect
+	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/smarty/assertions v1.15.0 // indirect
+	github.com/spf13/cast v1.3.1 // indirect
 	github.com/swaggo/files/v2 v2.0.1 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/tools v0.26.0 // indirect
+	google.golang.org/protobuf v1.34.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

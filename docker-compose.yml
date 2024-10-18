@@ -16,6 +16,12 @@ services:
       - 6379:6379
     volumes:
       - redis:/data
+  asynqmon:
+    image: hibiken/asynqmon
+    ports:
+      - 8080:8080
+    entrypoint: ["./asynqmon"]
+    command: ["--redis-url", "redis://:@redis:6379"]
 
 volumes:
   postgres:

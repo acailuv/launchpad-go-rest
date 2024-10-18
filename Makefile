@@ -4,6 +4,9 @@ start-server:
 start-cron:
 	@go run cmd/cron/main.go
 
+start-queue:
+	@go run cmd/queue/main.go
+
 # Install swaggo: https://github.com/swaggo/echo-swagger
 swag-install:
 	@go install github.com/swaggo/swag/cmd/swag@latest

@@ -17,6 +17,7 @@ import (
 
 	goerrors "github.com/go-errors/errors"
 	"github.com/go-redis/redis"
+	"github.com/hibiken/asynq"
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -39,9 +40,15 @@ func main() {
 	config.Init()
 
 	db := sqlx.MustConnect("postgres", config.Configs.DatabaseDSN)
+	defer db.Close()
+
 	redis := redis.NewClient(&redis.Options{
 		Addr: config.Configs.RedisDSN,
 	})
+	defer redis.Close()
+
+	asynqClient := asynq.NewClient(asynq.RedisClientOpt{Addr: config.Configs.RedisDSN})
+	defer asynqClient.Close()
 
 	zerolog.ErrorStackMarshaler = func(err error) interface{} {
 		frames := goerrors.Wrap(err, 1).StackFrames()
@@ -55,7 +62,7 @@ func main() {
 	}
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 
-	repositories := repository.Init(db, redis)
+	repositories := repository.Init(db, redis, asynqClient)
 	utils := utils.New()
 	services := service.Init(repositories, utils)
 	controllers := controller.Init(services)
@@ -68,13 +75,11 @@ func main() {
 		echo_middleware.Gzip(),
 		echo_middleware.Recover(),
 		echo_middleware.RequestLoggerWithConfig(echo_middleware.RequestLoggerConfig{
-			LogMethod:    true,
-			LogURI:       true,
-			LogRequestID: true,
+			LogMethod: true,
+			LogURI:    true,
 			LogValuesFunc: func(c echo.Context, v echo_middleware.RequestLoggerValues) error {
 				log.Info().
 					Str("endpoint", fmt.Sprintf("%s %s", v.Method, v.URI)).
-					Str("request_id", v.RequestID).
 					Msg("request incoming")
 
 				return nil

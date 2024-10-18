@@ -245,6 +245,52 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/v1/utils/publish-task": {
+            "post": {
+                "description": "Publish a task to queue",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Publish a task to queue",
+                "parameters": [
+                    {
+                        "description": "body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/utils.PublishTaskRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/base.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/base.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/base.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -258,6 +304,9 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "numeric.Numeric": {
+            "type": "object"
         },
         "user.CreateRequest": {
             "type": "object",
@@ -308,6 +357,20 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password_confirmation": {
+                    "type": "string"
+                }
+            }
+        },
+        "utils.PublishTaskRequest": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "$ref": "#/definitions/numeric.Numeric"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "queue": {
                     "type": "string"
                 }
             }
